@@ -1,0 +1,9 @@
+// Cloudflare Workers settings. Only used if you host on Cloudflare.
+// Deploy command in Cloudflare: npx wrangler deploy   (leave the build command empty)
+{
+  "name": "known-parenting",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "id": "./",
+  "name": "known: parenting",
+  "short_name": "known",
+  "description": "One small moment with each of your kids, every day.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f7f1e6",
+  "theme_color": "#f7f1e6",
+  "categories": ["lifestyle", "education"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

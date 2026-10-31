@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>known: parenting</title>
+<meta name="description" content="One small moment with each of your kids, every day.">
+<meta name="theme-color" content="#f7f1e6">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="known: parenting">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <filter id="crayon"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" result="n"/>
+    <feDisplacementMap in="SourceGraphic" in2="n" scale="2.2"/></filter>
+</svg>
+
+<div class="phone" id="phone">
+  <svg class="sun" id="sun" viewBox="0 0 100 100" filter="url(#crayon)" aria-hidden="true">
+    <circle cx="50" cy="50" r="17" fill="none" stroke="#e2bc5e" stroke-width="3.5"/>
+    <g stroke="#e2bc5e" stroke-width="3.5" stroke-linecap="round">
+      <path d="M50 14v12M50 74v12M14 50h12M74 50h12M24 24l8 8M68 68l8 8M24 76l8-8M68 32l8-8"/></g>
+    <g id="sunHat" style="display:none"><path d="M38 36 L50 6 L62 36" stroke="#c98c6e" stroke-width="3" fill="none" stroke-linejoin="round"/><circle cx="50" cy="5" r="3.5" fill="#8aa3b8"/></g>
+  </svg>
+
+  <!-- FIRST-TIME SETUP -->
+  <div class="screen hidden" id="onboard">
+    <div id="obBody"></div>
+  </div>
+
+  <!-- HOME -->
+  <div class="screen hidden" id="home">
+    <div class="brand">known: parenting</div>
+    <h1 id="greet">Good evening</h1>
+    <svg class="underline" viewBox="0 0 180 12" filter="url(#crayon)"><path d="M3 8 C 50 3, 100 10, 176 5" stroke="#c98c6e" stroke-width="4" fill="none" stroke-linecap="round"/></svg>
+    <div class="subtitle">A simple step to love your children a little deeper today.</div>
+
+    <div class="label">Your kids</div>
+    <div class="kidgrid" id="kidgrid"></div>
+
+    <div id="verseWrap">
+      <div class="label">Today's verse</div>
+      <div class="verse">
+        <div class="vart" id="vart"></div>
+        <div class="copy">
+          <blockquote id="vText"></blockquote>
+          <cite id="vRef"></cite>
+          <p id="vEnc"></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="label">Today's reminder</div>
+    <div class="reminder">
+      <svg class="rheart" viewBox="0 0 60 60" filter="url(#crayon)" fill="none" stroke="#c98c6e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M30 48 C 12 36, 8 26, 14 18 C 20 11, 28 14, 30 21 C 32 14, 40 11, 46 18 C 52 26, 48 36, 30 48Z"/></svg>
+      <div><b id="rTitle"></b><p id="rText"></p></div>
+    </div>
+  </div>
+
+  <!-- KID PAGE -->
+  <div class="screen hidden" id="kidpage">
+    <button class="back" onclick="goBack()">‹ Home</button>
+    <div class="kidhead"><h1 id="kName"></h1><span class="streakpill" id="kStreak"></span></div>
+    <svg class="underline" viewBox="0 0 180 12" filter="url(#crayon)"><path id="kUnder" d="M3 8 C 50 3, 100 10, 176 5" stroke="#c98c6e" stroke-width="4" fill="none" stroke-linecap="round"/></svg>
+    <div class="stage" id="kStage"></div>
+
+    <div class="draw-row" id="drawRow" style="margin-top:12px">
+      <div class="draw" id="qCard" style="background:var(--clay)" onclick="drawCard('question')">
+        <div class="stack"><span></span><span></span><span></span></div><small>Draw a</small><b>Question</b></div>
+      <div class="draw" id="mCard" style="background:var(--sage)" onclick="drawCard('moment')">
+        <div class="stack"><span></span><span></span><span></span></div><small>Draw a</small><b>Moment</b></div>
+    </div>
+
+    <div class="label" id="timeLabel">Time at home</div>
+    <div class="time" id="timeCard" onclick="timeSheet()"></div>
+
+    <div class="label" id="chLabel">Today's challenge</div>
+    <div class="challenge">
+      <div class="art" id="art"></div>
+      <button class="pencil" title="Kid settings" aria-label="Kid settings" onclick="openKidSettings(sel)">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 2.5l2.5 2.5L5 13.5H2.5V11z"/></svg></button>
+      <div class="copy">
+        <span class="for" id="forTag"></span>
+        <h3 id="chTitle"></h3>
+        <p id="chText"></p>
+        <div class="chwhy" id="chWhy"></div>
+      </div>
+      <button class="btn" id="doneBtn" onclick="markDone()">We did it →</button>
+    </div>
+
+    <div class="week" id="week"></div>
+    <div class="streaklbl" id="streakLbl"></div>
+    <div class="gracelbl" id="graceLbl"></div>
+
+    <div id="kBonus"></div>
+    <div class="label">Memories</div>
+    <div class="memcard" id="kMem"></div>
+  </div>
+
+  <!-- GAMES -->
+  <div class="screen hidden" id="games">
+    <div class="brand">known: parenting</div>
+    <h1>Play together</h1>
+    <svg class="underline" viewBox="0 0 180 12" filter="url(#crayon)"><path d="M3 8 C 50 3, 100 10, 176 5" stroke="#8fa58b" stroke-width="4" fill="none" stroke-linecap="round"/></svg>
+    <div class="subtitle" style="margin-bottom:18px">Quick games for two, on one phone. Sit side by side and pass it back and forth.</div>
+    <div class="game-list" id="gameList"></div>
+  </div>
+
+  <!-- LIBRARY -->
+  <div class="screen hidden" id="library">
+    <div class="brand">known: parenting</div>
+    <h1>Library</h1>
+    <svg class="underline" viewBox="0 0 180 12" filter="url(#crayon)"><path d="M3 8 C 50 3, 100 10, 176 5" stroke="#8aa3b8" stroke-width="4" fill="none" stroke-linecap="round"/></svg>
+    <div class="seg">
+      <button data-seg="learn" onclick="setSeg('learn')">Learn</button>
+      <button data-seg="books" onclick="setSeg('books')">Books</button>
+      <button data-seg="memories" onclick="setSeg('memories')">Memories</button>
+      <button data-seg="resources" onclick="setSeg('resources')">Resources</button>
+    </div>
+    <div id="libBody"></div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div class="screen hidden" id="settings">
+    <div class="brand">known: parenting</div>
+    <h1>Settings</h1>
+    <svg class="underline" viewBox="0 0 180 12" filter="url(#crayon)"><path d="M3 8 C 50 3, 100 10, 176 5" stroke="#8aa3b8" stroke-width="4" fill="none" stroke-linecap="round"/></svg>
+    <div class="label">Your kids</div>
+    <div id="setList"></div>
+    <button class="btn full light" style="margin-top:4px" onclick="addKid()">+ Add a child</button>
+
+    <div class="label">Daily reminder</div>
+    <div class="setrow" onclick="reminderSheet()"><div><b>Reminder time</b><span class="small" id="remTimeLbl"></span></div><span class="chev">›</span></div>
+    <div class="setrow" onclick="installSheet()"><div><b>Add to Home Screen</b><span class="small">Open it like an app, even offline</span></div><span class="chev">›</span></div>
+
+    <div class="label">Your data</div>
+    <div class="setrow" onclick="exportData()"><div><b>Back up my data</b><span class="small">Kids, streaks and memories, saved to a file</span></div><span class="chev">›</span></div>
+    <div class="setrow" onclick="importPick.click()"><div><b>Restore from a backup</b><span class="small">Load a backup file</span></div><span class="chev">›</span></div>
+    <input type="file" id="importPick" accept="application/json,.json" style="display:none" onchange="importData(this.files[0])">
+    <div class="setrow danger" onclick="deleteStart()"><div><b>Delete all my data</b><span class="small">Erase every kid, streak and memory from this phone</span></div><span class="chev">›</span></div>
+    <div class="small" style="margin:6px 4px 0">Everything is saved privately on this phone. Back up now and then so nothing gets lost.</div>
+
+    <div class="betanote">Beta: all premium features are free while we test.</div>
+
+    <div class="setrow toggle quiet" onclick="setFaith(!state.settings.faith)">
+      <div><b>Include prayer & faith prompts</b><span class="small">Daily verse, prayers and blessings, faith questions</span></div>
+      <span class="switch" id="faithSw"><i></i></span>
+    </div>
+    <div class="credit">Scripture quotations are from the ESV® Bible (The Holy Bible, English Standard Version®), © 2001 by Crossway, a publishing ministry of Good News Publishers. Used by permission. All rights reserved.</div>
+    <div class="appver" id="appVer"></div>
+  </div>
+
+  <!-- ONE KID'S SETTINGS -->
+  <div class="screen hidden" id="kidsettings">
+    <button class="back" onclick="goBack()">‹ Settings</button>
+    <h1 id="ksTitle"></h1>
+    <svg class="underline" viewBox="0 0 180 12" filter="url(#crayon)"><path id="ksUnder" d="M3 8 C 50 3, 100 10, 176 5" stroke-width="4" fill="none" stroke-linecap="round"/></svg>
+    <div class="field"><label for="ksName">Name</label><input id="ksName" autocomplete="off" oninput="editKid('name',this.value)"></div>
+    <div class="field"><label for="ksBirth">Birthday</label><input id="ksBirth" type="date" oninput="editKid('birth',this.value)"><div class="small" id="ksAge" style="margin-top:6px"></div></div>
+    <div class="field"><label>Color</label><div class="swatches" id="ksColors"></div></div>
+    <div class="field"><label>Art</label><div class="artgrid" id="ksArt"></div></div>
+    <div class="btns" style="margin-top:6px">
+      <button class="btn full light" onclick="celebrate(sel,true)">Preview birthday celebration</button>
+      <button class="btn full light" style="color:#a04e3e" onclick="removeKid()">Remove child</button>
+    </div>
+  </div>
+
+  <nav class="tabs" id="tabs">
+    <button class="tab on" id="t-home" onclick="go('home')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"/></svg>Today</button>
+    <button class="tab" id="t-games" onclick="go('games')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg>Games</button>
+    <button class="tab" id="t-library" onclick="go('library')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 5c3-1 6-1 8 1v14c-2-2-5-2-8-1z"/><path d="M20 5c-3-1-6-1-8 1v14c2-2 5-2 8-1z"/></svg>Library</button>
+    <button class="tab" id="t-settings" onclick="go('settings')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>Settings</button>
+  </nav>
+
+  <!-- birthday celebration -->
+  <div class="bday hidden" id="bday">
+    <div class="confetti" id="confetti"></div>
+    <div class="bcard">
+      <div class="bart" id="bArt"></div>
+      <div class="bkicker">Today's the day</div>
+      <h2 id="bTitle"></h2>
+      <p id="bSub"></p>
+      <div class="bchal"><b>Birthday challenge</b><span id="bChal"></span></div>
+      <button class="btn full" id="bBtn" onclick="closeBday()">Celebrate</button>
+      <button class="btn full light" id="bMem" style="margin-top:8px"></button>
+    </div>
+  </div>
+</div>
+
+<div id="printArea"></div>
+<div class="overlay" id="overlay"><div class="sheet" id="sheet"></div></div>
+
+<!-- content first, then art, then the app -->
+<script src="content/stages-baby.js"></script>
+<script src="content/stages-toddler.js"></script>
+<script src="content/stages-kid.js"></script>
+<script src="content/stages-teen.js"></script>
+<script src="content/verses-reminders.js"></script>
+<script src="content/library.js"></script>
+<script src="art.js"></script>
+<script src="app.js"></script>
+<script src="games.js"></script>
+<script src="books.js"></script>
+</body>
+</html>

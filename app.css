@@ -1,0 +1,102 @@
+/* known: parenting — PWA layer on top of styles.css */
+
+/* On a phone the app fills the screen. On a computer it shows in a phone-shaped frame. */
+html,body{background:var(--cream)}
+body{padding:0;min-height:100vh;min-height:100dvh;-webkit-tap-highlight-color:transparent;overscroll-behavior-y:none}
+.phone{max-width:none;border-radius:0;box-shadow:none;min-height:100vh;min-height:100dvh;
+       padding:calc(env(safe-area-inset-top) + 22px) calc(env(safe-area-inset-right) + 16px) 0 calc(env(safe-area-inset-left) + 16px)}
+.tabs{position:sticky;bottom:0;z-index:4;padding-bottom:calc(env(safe-area-inset-bottom) + 12px)}
+.sheet{padding-bottom:calc(env(safe-area-inset-bottom) + 34px)}
+.bday{position:fixed;border-radius:0}
+.toast{position:fixed;bottom:calc(env(safe-area-inset-bottom) + 96px)}
+button,.kidcard,.draw,.game,.setrow,.time{touch-action:manipulation}
+@media (min-width:520px){
+  body{background:#e3dace;padding:20px 12px}
+  .phone{max-width:390px;border-radius:40px;box-shadow:0 12px 40px rgba(60,40,20,.18);min-height:820px;padding:30px 16px 0}
+  .bday{position:absolute;border-radius:40px}
+  .toast{position:absolute;bottom:96px}
+}
+
+/* grace day */
+.dot.grace{border-style:dashed;border-width:2px}
+.gracelbl{text-align:center;font-size:11.5px;color:var(--muted);margin-top:4px}
+.betanote{margin:26px 4px 0;font-size:12.5px;color:var(--muted);background:#efe6d6;border-radius:12px;padding:8px 12px}
+.appver{font-size:11px;color:var(--muted);margin-top:10px;opacity:.8}
+
+/* first-time setup */
+#onboard{padding-bottom:30px}
+.ob-step{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--clay);font-weight:600;margin-top:8px}
+.ob-art{width:130px;height:150px;margin:10px auto 0}
+.ob-lead{color:var(--muted);font-size:15.5px;line-height:1.5;margin:10px 0 18px}
+.ob-kid{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px}
+.ob-kid .sw{width:30px;height:30px;border-radius:50%;flex:0 0 30px}
+.ob-kid b{font-family:"Fraunces",serif;font-size:17px}
+.ob-kid button{margin-left:auto;border:0;background:none;color:var(--muted);font-size:20px;cursor:pointer}
+.ob-actions{display:grid;gap:8px;margin-top:18px}
+.ob-skip{background:none;border:0;color:var(--muted);text-decoration:underline;font-family:inherit;font-size:13px;margin-top:10px;cursor:pointer}
+.hint{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:12px 14px;font-size:14px;line-height:1.5;color:var(--text);margin:8px 0}
+.hint b{font-family:"Fraunces",serif}
+input[type=time]{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--paper);font-family:inherit;font-size:18px;color:var(--text)}
+.game.res{cursor:pointer}
+
+/* kid cards: keep the words in their own column so they never run into the drawing */
+.kidcard{min-height:132px}
+.kidcard .kart{width:68px;height:82px;right:2px;bottom:-4px;opacity:.9}
+.kidcard .kinfo{position:relative;padding-right:56px}
+.kidcard .kname{font-size:20px;line-height:1.15;overflow-wrap:anywhere}
+.kidcard .kmeta{line-height:1.3;margin-top:2px}
+.kidgrid .kidcard:last-child:nth-child(odd) .kart{width:80px;height:96px;right:18px}
+.kidgrid .kidcard:last-child:nth-child(odd) .kinfo{padding-right:110px}
+
+/* first-time setup: centered on the screen instead of stuck to the top */
+#onboard{display:flex;flex-direction:column}
+#obBody{margin:auto 0;width:100%;padding:12px 0}
+#obBody .ob-welcome{text-align:center}
+#obBody .ob-welcome .ob-lead{max-width:320px;margin-left:auto;margin-right:auto}
+
+/* games */
+.scores{display:flex;justify-content:space-between;font-family:"Fraunces",serif;font-weight:600;font-size:17px;margin:4px 2px 8px}
+.hm-word{display:flex;justify-content:center;flex-wrap:wrap;gap:6px;margin-top:6px}
+.hm-word span{width:26px;height:36px;border-bottom:3px solid var(--ink);font-family:"Fraunces",serif;font-size:26px;font-weight:600;text-align:center;line-height:36px;color:var(--ink)}
+.hm-keys{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.hm-keys button{aspect-ratio:1;border:1px solid var(--line);border-radius:10px;background:var(--cream);font-family:inherit;font-size:16px;font-weight:600;color:var(--ink);cursor:pointer;padding:0}
+.hm-keys button.miss{opacity:.3}
+.hm-keys button:disabled{cursor:default}
+.dbboard{width:100%;max-width:320px;display:block;margin:0 auto;touch-action:manipulation}
+.dbboard .tap{stroke:transparent;stroke-width:7;cursor:pointer}
+.c4board{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;background:var(--blue);padding:8px;border-radius:18px;max-width:330px;margin:0 auto}
+.c4cell{aspect-ratio:1;border:0;background:none;padding:0;cursor:pointer;display:flex}
+.c4cell i{flex:1;border-radius:50%;background:var(--cream);transition:background .15s}
+.mmgrid{display:grid;gap:8px;max-width:330px;margin:0 auto}
+.mmcard{aspect-ratio:1;border:2px solid var(--line);border-radius:14px;background:var(--clay);cursor:pointer;padding:4px;display:flex;align-items:center;justify-content:center;transition:transform .2s}
+.mmcard span{width:60%;height:60%;border:2px dashed rgba(255,255,255,.7);border-radius:50%}
+.mmcard.up{background:var(--paper);transform:rotateY(0)}
+.mmcard svg{width:100%;height:100%}
+
+/* make a book */
+.bkmode{grid-template-columns:1fr 1fr;margin:4px 0 10px}
+.bk-page{position:relative;width:100%;aspect-ratio:5/4;border:2px solid var(--line);border-radius:20px;background:var(--cream);overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}
+.bk-page canvas{position:absolute;inset:0;width:100%;height:100%}
+.bk-items{position:absolute;inset:0}
+.bk-page.drawing .bk-items,.bk-page.read .bk-items{pointer-events:none}
+.bk-page.drawing{cursor:crosshair}
+.bk-page .pnum{pointer-events:none}
+.bk-item{position:absolute;cursor:grab;touch-action:none}
+.bk-item svg{width:100%;height:auto;display:block;pointer-events:none}
+.bk-item.sel{outline:2px dashed var(--ink);outline-offset:2px;border-radius:10px}
+.bk-selbar{display:grid;grid-template-columns:1fr 1fr 1.3fr 1.3fr 1.6fr;gap:6px;margin-top:10px}
+.bk-selbar button,.bk-drawbar button{border:1px solid var(--line);background:var(--paper);border-radius:12px;padding:9px 4px;font-family:inherit;font-size:14px;font-weight:600;color:var(--ink);cursor:pointer}
+.bk-selbar button.del{color:#a04e3e}
+.bk-selbar.off{opacity:.35;pointer-events:none}
+.bk-pens{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.bk-pens .swatch{width:34px;height:34px}
+.bk-pens .eraser{background:var(--paper);border:1px solid var(--line);font-size:15px;color:var(--muted)}
+.bk-drawbar{display:flex;gap:6px;margin-top:10px}
+.bk-drawbar button:disabled{opacity:.4}
+.bk-sizes{display:flex;gap:4px;background:#efe6d6;border-radius:12px;padding:3px;margin-right:auto}
+.bk-sizes button{border:0;background:none;padding:6px 12px;border-radius:9px}
+.bk-sizes button.on{background:var(--paper)}
+.bk-text{border:1px solid var(--line);border-radius:14px;background:var(--paper);margin-top:12px;padding:10px}
+.bk-read-text{font-family:"Fraunces",serif;font-size:19px;text-align:center;line-height:1.4;margin:14px 6px 6px;color:var(--ink)}
+
+.setrow.danger b{color:#a04e3e}
