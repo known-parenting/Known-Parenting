@@ -3,7 +3,7 @@
 One small, intentional moment with each of your kids, every day.
 This folder is the PWA beta: a web app you install on your phone from the browser. It needs no server and no build step. Everything is saved on the phone.
 
-Version 0.5.2 · service worker `kp-v7`
+Version 0.5.3 · service worker `kp-v8`
 
 ---
 
@@ -85,8 +85,8 @@ Once it's opened once, it works offline.
 
 ## 4. Every time you change something
 
-1. Open `sw.js` and change `VERSION` (`kp-v7` → `kp-v8`).
-2. Open `app.js` and change `APP_VERSION` at the top (`0.5.2` → `0.5.3`).
+1. Open `sw.js` and change `VERSION` (`kp-v8` → `kp-v9`).
+2. Open `app.js` and change `APP_VERSION` at the top (`0.5.3` → `0.5.4`).
 3. Commit and push.
 
 Phones pick up the new version the next time the app is opened (it reloads itself once). You can check which version a phone has at the very bottom of **Settings**.

@@ -1,7 +1,7 @@
 /* known: parenting — service worker (offline support)
    IMPORTANT: change VERSION every time you change any file, or phones keep showing the old version.
    Also bump APP_VERSION at the top of app.js so you can see which version a phone is on (Settings, bottom). */
-const VERSION = 'kp-v7';
+const VERSION = 'kp-v8';
 const FONTS = 'kp-fonts';
 
 const FILES = [

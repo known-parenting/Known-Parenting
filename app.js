@@ -2,7 +2,7 @@
    Everything is saved on the device in localStorage under "kp.v1".
    Content lives in /content/*.js so it can be edited without touching this file. */
 
-const APP_VERSION='0.5.2';   // shown in Settings. Bump with VERSION in sw.js.
+const APP_VERSION='0.5.3';   // shown in Settings. Bump with VERSION in sw.js.
 
 /* =========================== dates =========================== */
 const pad=n=>String(n).padStart(2,'0');
