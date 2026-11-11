@@ -55,3 +55,6 @@ const STICKERS={
   tree:{name:'Tree',svg:p=>`<svg viewBox="0 0 100 120" ${S}><path d="M50 108 V70" stroke="${p.f}" stroke-width="4"/><path d="M50 72 C 24 74, 18 48, 34 40 C 32 22, 58 16, 64 32 C 82 30, 86 58, 68 66 C 64 74, 56 74, 50 72 Z" stroke="${p.a}"/></svg>`},
   cross:{name:'Cross',svg:p=>`<svg viewBox="0 0 100 120" ${S}><path d="M50 18 V104 M30 44 H70" stroke="${p.f}" stroke-width="4"/></svg>`}
 };
+STICKERS.sheep={name:'Sheep',svg:p=>`<svg viewBox="0 0 100 120" ${S}><path d="M26 72 C 14 72, 14 56, 26 56 C 24 44, 40 40, 46 48 C 52 38, 70 40, 70 52 C 82 50, 86 66, 76 70 C 80 80, 66 86, 58 80 C 50 88, 34 86, 34 78 C 30 80, 26 78, 26 72 Z" stroke="${p.e}"/><path d="M74 54 C 82 50, 90 56, 88 64 C 86 70, 78 70, 76 66" stroke="${p.e}"/><path d="M38 84 V98 M64 82 V98" stroke="${p.e}"/></svg>`};
+STICKERS.crown={name:'Crown',svg:p=>`<svg viewBox="0 0 100 120" ${S}><path d="M18 84 L22 44 L38 62 L50 36 L62 62 L78 44 L82 84 Z" stroke="${p.c}"/><path d="M18 92 H82" stroke="${p.c}"/><circle cx="50" cy="72" r="4" stroke="${p.b}"/></svg>`};
+STICKERS.stone={name:'Stone',svg:p=>`<svg viewBox="0 0 100 120" ${S}><path d="M30 78 C 24 64, 36 52, 50 54 C 66 52, 78 62, 72 76 C 68 86, 38 88, 30 78 Z" stroke="${p.e}"/></svg>`};

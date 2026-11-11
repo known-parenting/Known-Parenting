@@ -3,7 +3,7 @@
 One small, intentional moment with each of your kids, every day.
 This folder is the PWA beta: a web app you install on your phone from the browser. It needs no server and no build step. Everything is saved on the phone.
 
-Version 0.5.3 · service worker `kp-v8`
+Version 0.6.1 · service worker `kp-v10`
 
 ---
 
@@ -16,7 +16,7 @@ app.js                  logic: saving, streaks + grace day, setup, memories, bir
 games.js                hangman, dots and boxes, connect four, memory match (tic-tac-toe is in app.js)
 books.js                make a book: place and move pictures, draw freehand, write the words
 art.js                  crayon drawings (placeholder art until the illustrator's set is ready)
-content/                every card, verse and reminder (edit these, not app.js)
+content/                every card, verse, reminder, book and trivia question (edit these, not app.js)
 manifest.webmanifest    makes it installable
 sw.js                   makes it work offline
 icons/                  app icons
@@ -85,8 +85,8 @@ Once it's opened once, it works offline.
 
 ## 4. Every time you change something
 
-1. Open `sw.js` and change `VERSION` (`kp-v8` → `kp-v9`).
-2. Open `app.js` and change `APP_VERSION` at the top (`0.5.3` → `0.5.4`).
+1. Open `sw.js` and change `VERSION` (`kp-v10` → `kp-v11`).
+2. Open `app.js` and change `APP_VERSION` at the top (`0.6.1` → `0.6.2`).
 3. Commit and push.
 
 Phones pick up the new version the next time the app is opened (it reloads itself once). You can check which version a phone has at the very bottom of **Settings**.

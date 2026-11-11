@@ -2,7 +2,7 @@
    Everything is saved on the device in localStorage under "kp.v1".
    Content lives in /content/*.js so it can be edited without touching this file. */
 
-const APP_VERSION='0.5.3';   // shown in Settings. Bump with VERSION in sw.js.
+const APP_VERSION='0.6.1';   // shown in Settings. Bump with VERSION in sw.js.
 
 /* =========================== dates =========================== */
 const pad=n=>String(n).padStart(2,'0');
@@ -400,7 +400,7 @@ function deleteAll(){
 function openS(html){sheet.innerHTML='<div class="grab"></div>'+html;overlay.classList.add('open');}
 function closeS(){overlay.classList.remove('open');}
 overlay.onclick=e=>{if(e.target===overlay)closeS();};
-function toast(t){document.querySelectorAll('.toast').forEach(x=>x.remove());const el=document.createElement('div');el.className='toast';el.textContent=t;phone.appendChild(el);setTimeout(()=>el.remove(),2400);}
+function toast(t){document.querySelectorAll('.toast').forEach(x=>x.remove());const el=document.createElement('div');el.className='toast'+(overlay.classList.contains('open')?' top':'');el.textContent=t;phone.appendChild(el);setTimeout(()=>el.remove(),2400);}
 
 function timeSheet(){
   const k=kid(sel), r=calc(k.b);
@@ -518,26 +518,29 @@ function renderLibrary(){
   if(libSeg==='books'){
     h=`<div class="storycta" onclick="${state.kids.length?'startStory()':"toast('Add a child in Settings first')"}"><div><b>Make your own book together</b><span>Place pictures, draw freehand, and write the words with your kid. It saves to their memories.</span></div></div>
       <div class="label">known: parenting books</div><div class="game-list">`+
-      KP_BOOKS.map(b=>`<div class="game" onclick="toast('Books coming soon')"><div><b>${b.t}</b><div class="small">Ages ${b.a}</div></div><span class="pill">Soon</span></div>`).join('')+'</div>';
+      (state.settings.faith?KP_BOOKS.map((b,n)=>`<div class="game" onclick="openReadBook(${n})"><div><b>${b.t}</b><div class="small">Ages ${b.a} · ${b.pages.length} pages</div></div><span class="pill" style="background:var(--sage);color:#fff">Read</span></div>`).join(''):'<div class="small">These books are Bible stories. Turn on faith prompts in Settings to see them.</div>')+'</div>';
   }
   if(libSeg==='memories'){
     if(!state.kids[memKid]) memKid=0;
     const k=kid(memKid); if(!k){libBody.innerHTML='<div class="small">Add a child in Settings to start saving memories.</div>';return;}
     const {answers,stories}=yearMemories(memKid), raw=state.kids[memKid], b18=calc(k.b);
     h=`<div class="chips">${state.kids.map((x,i)=>`<button class="${i===memKid?'on':''}" style="${i===memKid?`background:${x.color};border-color:${x.color}`:''}" onclick="memKid=${i};renderLibrary()">${esc(x.name)}</button>`).join('')}</div>
-      <div class="lcard"><b>The Book of ${esc(k.name)}</b><p>${b18?`Growing every year. Ready on ${esc(k.name)}'s 18th birthday, ${b18.end.toLocaleDateString(undefined,{month:'long',year:'numeric'})}.`:'Ready to give. Every year you saved is inside.'}</p>
-        <div class="small">${raw.memories.length} answers · ${raw.stories.length} ${raw.stories.length===1?'story':'stories'} · ${raw.gamesWon} games won</div></div>
+      <div class="lcard" onclick="openBookOf(${memKid})" style="cursor:pointer"><b>The Book of ${esc(k.name)} ›</b><p>${b18?`Growing every year. Ready on ${esc(k.name)}'s 18th birthday, ${b18.end.toLocaleDateString(undefined,{month:'long',year:'numeric'})}.`:'Ready to give. Every year you saved is inside.'}</p>
+        <div class="small">${raw.memories.length} answers · ${raw.stories.length} ${raw.stories.length===1?'book':'books'} · ${(raw.letters||[]).length} ${(raw.letters||[]).length===1?'letter':'letters'} · ${raw.gamesWon} games won</div></div>
+      <div class="storycta" onclick="writeLetter(${memKid})" style="margin-bottom:12px"><div><b>${(raw.letters||[]).some(l=>l.age===k.years)?'Edit':'Write'} this year’s letter to ${esc(k.name)} at 18</b><span>Once a year. They all go into the book.</span></div></div>
       <div class="game" onclick="openRecap(${memKid})"><div><b>This year</b><div class="small">${answers.length} ${answers.length===1?'answer':'answers'}, ${stories.length} ${stories.length===1?'story':'stories'}</div></div><span class="chev">›</span></div>
-      ${raw.stories.length?`<div class="label">Stories you made</div><div class="game-list">${raw.stories.map((s,n)=>`<div class="game" onclick="readStory(${memKid},${n})"><div><b>${esc(s.title)}</b><div class="small">${s.pages.length} pages</div></div><span class="chev">›</span></div>`).join('')}</div>`:''}
+      ${raw.stories.length?`<div class="label">Books you made together</div><div class="game-list">${raw.stories.map((s,n)=>`<div class="game" onclick="readStory(${memKid},${n})"><div><b>${esc(s.title)}</b><div class="small">${s.pages.length} pages</div></div><span class="chev">›</span></div>`).join('')}</div>`:''}
       <div class="label">In ${esc(k.name)}'s words</div>
       ${raw.memories.length?raw.memories.map((m,n)=>`<div class="mem"><i>${esc(m.q)}</i><p>“${esc(m.a)}”</p><span>${parse(m.date).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})} · ${ageText(m.months)} · <a href="#" onclick="delMemory(${memKid},${n});return false">delete</a></span></div>`).join(''):`<div class="small">Nothing saved yet. Draw a question on ${esc(k.name)}'s page and save the answer.</div>`}`;
   }
   if(libSeg==='resources'){
     h=`<div class="small" style="margin-bottom:10px">Books we love and recommend. Some links are affiliate links, which means Known may earn a small commission at no extra cost to you.</div>`+
-      KP_RESOURCES.map(c=>`<div class="label">${c.cat}</div><div class="game-list">${c.items.map(r=>`<div class="game res" onclick="${r.url?`window.open('${r.url}','_blank')`:`toast('Store link coming soon')`}"><div><b>${r.t}</b><div class="small">${r.by} · ${r.a}</div><div class="small" style="margin-top:4px;color:var(--text)">${r.why}</div></div><span class="pill">Shop</span></div>`).join('')}</div>`).join('');
+      KP_RESOURCES.map(c=>`<div class="label">${c.cat}</div><div class="game-list">${c.items.map(r=>`<div class="game res" onclick="window.open(shopUrl(${JSON.stringify(r).replace(/"/g,'&quot;')}),'_blank')"><div><b>${r.t}</b><div class="small">${r.by} · ${r.a}</div><div class="small" style="margin-top:4px;color:var(--text)">${r.why}</div></div><span class="pill">Shop</span></div>`).join('')}</div>`).join('');
   }
   libBody.innerHTML=h;
 }
+function shopUrl(r){ if(r.url) return r.url; const tag=window.KP_AMAZON_TAG||'';
+  return 'https://www.amazon.com/s?k='+encodeURIComponent(r.t+' '+r.by)+(tag?'&tag='+encodeURIComponent(tag):''); }
 function delMemory(i,n){ if(!confirm('Delete this memory?')) return; state.kids[i].memories.splice(n,1); save(); renderLibrary(); }
 
 /* =========================== birthdays =========================== */

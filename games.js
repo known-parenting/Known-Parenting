@@ -1,7 +1,7 @@
 /* known: parenting — pass-and-play games for two on one phone.
    You play against your kid. When your kid wins, it counts toward their "games won". */
 
-const GAME_START={ttt:'openTTT',hangman:'playHangman',dots:'playDots',c4:'playC4',memory:'playMemory'};
+const GAME_START={ttt:'openTTT',hangman:'playHangman',dots:'playDots',c4:'playC4',memory:'playMemory',trivia:'playTrivia',twenty:'playTwenty',chain:'playChain'};
 const meColor=k=>k.color==='#c98c6e'?'#33402f':'#c98c6e';      // your color: clay, unless the kid is clay
 function kidWon(i){state.kids[i].gamesWon=(state.kids[i].gamesWon||0)+1;save();}
 function needKid(){ if(!state.kids.length){toast('Add a child in Settings first');return true;} return false; }
@@ -165,6 +165,7 @@ function mmStart(i,mode,pairs){
   openS(`<h2>Memory match</h2><div id="gArea"></div>`); mmRender();
 }
 function mmRender(){
+  if(!gArea()) return;   // the sheet was closed before the cards flipped back
   const k=kid(mm.i), me=meColor(k), col=t=>t==='kid'?k.color:t==='team'?k.color:me, cols=mm.cards.length===12?3:4;
   let msg, top;
   if(mm.mode==='team'){ top=`<div class="scores"><span style="color:${k.color}">Team ${esc(k.name)} & you</span><span>${mm.tries} tries</span></div>`;
@@ -172,7 +173,7 @@ function mmRender(){
   else { top=`<div class="scores"><span style="color:${k.color}">${esc(k.name)} ${mm.score.kid}</span><span style="color:${me}">You ${mm.score.me}</span></div>`;
     msg=mm.turn==='kid'?`${k.name}'s turn`:'Your turn';
     if(mm.over){const {me:a,kid:b}=mm.score; msg=b>a?`${k.name} wins! 🎉`:a>b?'You win! Rematch?':"It's a tie!";} }
-  gArea().innerHTML=top+`<div class="mmgrid" style="grid-template-columns:repeat(${cols},1fr)">${mm.cards.map((c,n)=>
+  gArea().innerHTML=top+`<div class="mmgrid" style="grid-template-columns:repeat(${cols},minmax(0,1fr))">${mm.cards.map((c,n)=>
       `<button class="mmcard ${c.up||c.got?'up':''}" style="${c.got?`border-color:${col(c.got)}`:''}" onclick="mmFlip(${n})">${c.up||c.got?STICKERS[c.a].svg(FULL):'<span></span>'}</button>`).join('')}</div>
     <div class="turn" style="margin:6px 0 4px;color:${mm.over?'var(--muted)':mm.mode==='team'?'var(--muted)':col(mm.turn)};font-weight:600">${msg}</div>
     <div class="btns" style="margin-top:12px">${mm.over?`<button class="btn full light" onclick="playMemory(${mm.i})">Play again</button>`:''}<button class="btn full" onclick="closeS()">Done</button></div>`;
@@ -191,4 +192,148 @@ function mmFlip(n){
     mm.busy=true;
     setTimeout(()=>{a.up=b.up=false; mm.open=[]; mm.busy=false; if(mm.mode!=='team') mm.turn=mm.turn==='kid'?'me':'kid'; mmRender();},1000);
   }
+}
+
+/* =========================== Bible trivia =========================== */
+/* Questions live in content/trivia.js, by age group. */
+const tvTier=k=>k.years<7?'little':k.years<11?'middle':'big';
+const TV_LABEL={little:'Easy questions for ages 6 and under.',middle:'Medium questions for ages 7–10.',big:'Harder questions for ages 11 and up.'};
+let tv=null;
+function playTrivia(i){
+  if(needKid()) return;
+  if(i===undefined) return pickKid("Who's playing with you?",'playTrivia');
+  const k=kid(i);
+  openS(`<h2>Bible trivia</h2><div class="small" style="margin-bottom:14px">Ten questions. Read each one out loud and pick the answer together, or take turns.</div>
+    <div class="btns">
+      <button class="btn full" style="background:${k.color}" onclick="tvStart(${i},'team')">Team up together</button>
+      <button class="btn full light" onclick="tvStart(${i},'turns')">Take turns</button>
+    </div>
+    <div class="small" style="margin-top:12px">${TV_LABEL[tvTier(k)]} ${KP_TRIVIA[tvTier(k)].length} questions in the pile.</div>`);
+}
+function tvStart(i,mode){
+  const k=kid(i), raw=state.kids[i], tier=tvTier(k), bank=KP_TRIVIA[tier];
+  // no repeats: work through the whole pile for this age before any question comes back
+  raw.seenTrivia=raw.seenTrivia||{}; let seen=raw.seenTrivia[tier]||[];
+  let pool=bank.map((_,n)=>n).filter(n=>!seen.includes(n));
+  if(pool.length<10){ seen=[]; pool=bank.map((_,n)=>n); }
+  const pick=pool.sort(()=>Math.random()-.5).slice(0,10);
+  raw.seenTrivia[tier]=[...seen,...pick]; save();
+  tv={i,mode,qs:pick.map(n=>{const [q,right,w1,w2,r]=bank[n];return {q,a:[right,w1,w2],r,opts:[right,w1,w2].sort(()=>Math.random()-.5)};}),at:0,picked:null,turn:'kid',score:{me:0,kid:0,team:0},over:false};
+  openS(`<h2>Bible trivia</h2><div id="gArea"></div>`); tvRender();
+}
+function tvRender(){
+  const k=kid(tv.i), me=meColor(k), q=tv.qs[tv.at];
+  if(tv.over){
+    const {me:a,kid:b,team:t}=tv.score;
+    const msg=tv.mode==='team'?`You got ${t} out of 10 together! 🎉`:b>a?`${k.name} wins! 🎉`:a>b?'You win! Rematch?':"It's a tie!";
+    gArea().innerHTML=`<div class="tv-end">${msg}</div><div class="btns"><button class="btn full light" onclick="tvStart(${tv.i},'${tv.mode}')">Play again</button><button class="btn full" onclick="closeS()">Done</button></div>`; return;
+  }
+  const who=tv.mode==='team'?'Answer together':tv.turn==='kid'?`${k.name}'s turn`:'Your turn';
+  const top=tv.mode==='team'?`<span style="color:${k.color}">Team: ${tv.score.team}</span>`:`<span style="color:${k.color}">${esc(k.name)} ${tv.score.kid}</span><span style="color:${me}">You ${tv.score.me}</span>`;
+  gArea().innerHTML=`<div class="scores">${top}<span class="small" style="align-self:center">${tv.at+1} / 10</span></div>
+    <div class="turn" style="margin:0 0 8px;font-weight:600;color:${tv.mode==='team'?'var(--muted)':tv.turn==='kid'?k.color:me}">${who}</div>
+    <div class="tv-q">${esc(q.q)}</div>
+    <div class="btns">${q.opts.map((o,n)=>{const right=o===q.a[0], show=tv.picked!==null;
+      return `<button class="btn full tv-opt ${show?(right?'right':(tv.picked===n?'wrong':'')):''}" ${show?'disabled':''} onclick="tvPick(${n})">${esc(o)}</button>`;}).join('')}</div>
+    ${tv.picked!==null?`<div class="small" style="margin:10px 2px">${q.opts[tv.picked]===q.a[0]?'That’s right!':'The answer is '+esc(q.a[0])+'.'}${q.r?' · '+q.r:''}</div>
+      <button class="btn full" onclick="tvNext()">${tv.at<9?'Next question':'See the score'}</button>`:''}`;
+}
+function tvPick(n){
+  if(tv.picked!==null) return; tv.picked=n;
+  if(tv.qs[tv.at].opts[n]===tv.qs[tv.at].a[0]) tv.score[tv.mode==='team'?'team':tv.turn]++;
+  tvRender();
+}
+function tvNext(){
+  tv.picked=null; tv.at++; if(tv.mode==='turns') tv.turn=tv.turn==='kid'?'me':'kid';
+  if(tv.at>=10){tv.over=true; if(tv.mode==='turns'&&tv.score.kid>tv.score.me) kidWon(tv.i);}
+  tvRender();
+}
+
+/* =========================== Twenty questions =========================== */
+const TQ_WORDS={
+  Animal:['dog','cat','elephant','giraffe','penguin','frog','horse','lion','shark','owl','turtle','monkey','bee','cow','dolphin'],
+  Food:['pizza','banana','pancakes','ice cream','carrot','apple','spaghetti','popcorn','cookie','watermelon','taco','cheese'],
+  Place:['the beach','the park','Grandma’s house','the zoo','church','the grocery store','the library','space','a farm','the mountains'],
+  Thing:['a toothbrush','a bicycle','a pillow','a car','a book','a ball','a spoon','a lamp','a backpack','a tree','an umbrella','a crayon']
+};
+let tq=null;
+function playTwenty(i){
+  if(needKid()) return;
+  if(i===undefined) return pickKid("Who's playing with you?",'playTwenty');
+  const k=kid(i);
+  openS(`<h2>Twenty questions</h2><div class="small" style="margin-bottom:14px">One of you thinks of something. The other asks yes-or-no questions and tries to guess it in 20.</div>
+    <div class="label" style="margin-top:0">Who's guessing?</div>
+    <div class="btns">
+      <button class="btn full" style="background:${k.color}" onclick="tqSetup(${i},'kid')">${esc(k.name)} guesses</button>
+      <button class="btn full light" onclick="tqSetup(${i},'me')">I guess</button>
+    </div>`);
+}
+function tqSetup(i,guesser){
+  const k=kid(i), thinker=guesser==='kid'?'You':esc(k.name);
+  openS(`<h2>Think of something</h2><div class="small" style="margin-bottom:14px">${thinker} think${guesser==='kid'?'':'s'} of something, or let the app pick one secretly.</div>
+    <div class="btns">${Object.keys(TQ_WORDS).map(c=>`<button class="btn full light" onclick="tqPick(${i},'${guesser}','${c}')">Pick a secret ${c.toLowerCase()}</button>`).join('')}
+      <button class="btn full" onclick="tqStart(${i},'${guesser}','')">We've got one in mind</button></div>`);
+}
+function tqPick(i,guesser,cat){
+  const list=TQ_WORDS[cat], w=list[Math.floor(Math.random()*list.length)], k=kid(i);
+  openS(`<h2>Your secret ${cat.toLowerCase()}</h2><div class="small">Only ${guesser==='kid'?'you':esc(k.name)} should look!</div>
+    <div class="tq-secret">${esc(w)}</div>
+    <button class="btn full" onclick="tqStart(${i},'${guesser}','${esc(w).replace(/'/g,"\\'")}','${cat}')">Got it, hide it</button>`);
+}
+function tqStart(i,guesser,word,cat){
+  tq={i,guesser,word,cat:cat||'',asked:0,over:false,won:false,showWord:false};
+  openS(`<h2>Twenty questions</h2><div id="gArea"></div>`); tqRender();
+}
+function tqRender(){
+  const k=kid(tq.i), who=tq.guesser==='kid'?k.name:'You', left=20-tq.asked;
+  let msg=`${who} ${tq.guesser==='kid'?'asks':'ask'} a yes-or-no question. Tap Yes or No to count it.`;
+  if(tq.over) msg=tq.won?`${tq.guesser==='kid'?k.name+' got it':'You got it'} in ${tq.asked} question${tq.asked===1?'':'s'}! 🎉`:`Out of questions!${tq.word?' It was '+tq.word+'.':''}`;
+  gArea().innerHTML=`${tq.cat?`<div class="small" style="text-align:center">It's ${/^[aeiou]/i.test(tq.cat)?'an':'a'} ${tq.cat.toLowerCase()}</div>`:''}
+    <div class="tq-count" style="color:${k.color}">${left}</div><div class="small" style="text-align:center;margin-top:-4px">question${left===1?'':'s'} left</div>
+    <div class="tq-dots">${Array.from({length:20},(_,n)=>`<i style="${n<tq.asked?`background:${k.color}`:''}"></i>`).join('')}</div>
+    <div class="turn" style="margin:10px 0 12px">${msg}</div>
+    ${tq.over?'':`<div class="tq-row"><button class="btn" style="background:var(--sage)" onclick="tqAsk()">Yes</button><button class="btn" style="background:var(--clay)" onclick="tqAsk()">No</button></div>
+      <button class="btn full" style="margin-top:8px;background:${k.color}" onclick="tqEnd(true)">${who} guessed it!</button>
+      <button class="btn full light" style="margin-top:8px" onclick="tqEnd(false)">Give up</button>`}
+    ${tq.word&&!tq.over?`<button class="ob-skip" style="display:block;margin:10px auto 0" onclick="tq.showWord=!tq.showWord;tqRender()">${tq.showWord?esc(tq.word):'Peek at the secret (thinker only)'}</button>`:''}
+    ${tq.over?`<div class="btns" style="margin-top:12px"><button class="btn full light" onclick="playTwenty(${tq.i})">Play again</button><button class="btn full" onclick="closeS()">Done</button></div>`:''}`;
+}
+function tqAsk(){ if(tq.over) return; tq.asked++; if(tq.asked>=20){tq.over=true; if(tq.guesser==='me') kidWon(tq.i);} tqRender(); }
+function tqEnd(won){ tq.over=true; tq.won=won; if(won&&tq.asked===0) tq.asked=1;
+  if((won&&tq.guesser==='kid')||(!won&&tq.guesser==='me')) kidWon(tq.i); tqRender(); }
+
+/* =========================== Word chain =========================== */
+const WC_START=['apple','sun','tiger','boat','cake','frog','star','house','music','garden','rabbit','pizza','dragon','cloud'];
+let wc=null;
+function playChain(i){
+  if(needKid()) return;
+  if(i===undefined) return pickKid("Who's playing with you?",'playChain');
+  const k=kid(i), best=state.kids[i].bestChain||0;
+  const start=WC_START[Math.floor(Math.random()*WC_START.length)];
+  wc={i,words:[start],turn:'kid',over:false};
+  openS(`<h2>Word chain</h2><div class="small">Take turns saying a word that starts with the last letter of the word before. No repeats! See how long a chain you can make together.${best?` Best chain with ${esc(k.name)}: <b>${best}</b>.`:''}</div><div id="gArea"></div>`); wcRender();
+}
+function wcRender(){
+  const k=kid(wc.i), me=meColor(k), last=wc.words[wc.words.length-1], letter=last.replace(/[^a-z]/gi,'').slice(-1).toUpperCase();
+  const who=wc.turn==='kid'?`${k.name}'s turn`:'Your turn';
+  gArea().innerHTML=`<div class="wc-chain">${wc.words.map((w,n)=>`<span style="${n?`border-color:${n%2?k.color:me}`:''}">${esc(w)}</span>`).join('<b>→</b>')}</div>
+    ${wc.over?`<div class="tv-end">Your chain: ${wc.words.length-1} word${wc.words.length===2?'':'s'}!${(wc.words.length-1)>=(state.kids[wc.i].bestChain||0)&&wc.words.length>1?' New best! 🎉':''}</div>
+      <div class="btns"><button class="btn full light" onclick="playChain(${wc.i})">Play again</button><button class="btn full" onclick="closeS()">Done</button></div>`
+    :`<div class="turn" style="margin:12px 0 8px;font-weight:600;color:${wc.turn==='kid'?k.color:me}">${who}: a word starting with <span class="wc-letter">${letter}</span></div>
+      <div class="field" style="margin:8px 0"><input id="wcIn" autocomplete="off" autocapitalize="none" placeholder="Type a word that starts with ${letter}" onkeydown="if(event.key==='Enter')wcAdd()"></div>
+      <div class="btns"><button class="btn full" onclick="wcAdd()">Add to the chain</button><button class="btn full light" onclick="wcStop()">We're stuck, end the chain</button></div>`}`;
+}
+function wcAdd(){
+  const el=document.getElementById('wcIn'), w=(el.value||'').trim().toLowerCase();
+  const last=wc.words[wc.words.length-1].replace(/[^a-z]/g,''), need=last.slice(-1);
+  if(w.replace(/[^a-z]/g,'').length<2){toast('Type a word');return el.focus();}
+  if(w[0]!==need){toast(`It has to start with ${need.toUpperCase()}`);return el.focus();}
+  if(wc.words.includes(w)){toast('Already used that one!');return el.focus();}
+  wc.words.push(w); wc.turn=wc.turn==='kid'?'me':'kid'; wcRender();
+  const n=document.getElementById('wcIn'); if(n) n.focus();
+}
+function wcStop(){
+  wc.over=true; const len=wc.words.length-1, raw=state.kids[wc.i];
+  if(len>(raw.bestChain||0)){raw.bestChain=len;save();}
+  wcRender();
 }

@@ -183,3 +183,65 @@ function readStory(i,n,pg=0){
     const ctx=cv.getContext('2d'); ctx.scale(dpr,dpr); paintStrokes(ctx,p.strokes,W,H);});
 }
 function delStory(i,n){ if(!confirm('Delete this book? This can’t be undone.')) return; state.kids[i].stories.splice(n,1); save(); closeS(); render(); toast('Book deleted'); }
+
+/* =========================== read-together books (Library > Books) =========================== */
+function openReadBook(n,pg=0){
+  const b=KP_BOOKS[n];
+  if(pg>=b.pages.length){ // last page: talk about it
+    openS(`<div class="pbadge">${esc(b.t)}</div><h2>Talk about it</h2>
+      <div class="btns" style="margin:12px 0">${b.q.map(q=>`<div class="why" style="margin:0"><b>ASK</b>${esc(q)}</div>`).join('')}</div>
+      <div class="snav"><button class="btn light" onclick="openReadBook(${n},${b.pages.length-1})">‹ Back</button><button class="btn light" onclick="openReadBook(${n},0)">Read again</button></div>
+      <button class="btn full" style="margin-top:10px" onclick="closeS()">The end</button>`); return;
+  }
+  const p=b.pages[pg];
+  openS(`<div class="pbadge">${esc(b.t)}</div>
+    <div class="bk-page read"><div class="bk-items">${p.items.map((it,m)=>itemHTML(it,m,false)).join('')}</div><div class="pnum">${pg+1} / ${b.pages.length}</div></div>
+    <p class="bk-read-text">${esc(p.text)}</p>
+    <div class="snav"><button class="btn light" ${pg===0?'disabled':''} onclick="openReadBook(${n},${pg-1})">‹</button>
+      <button class="btn light" onclick="openReadBook(${n},${pg+1})">${pg<b.pages.length-1?'›':'Talk about it ›'}</button></div>`);
+}
+
+/* =========================== letters to them at 18 =========================== */
+function writeLetter(i,edit){
+  const k=kid(i), raw=state.kids[i], yr=k.years, existing=(raw.letters||[]).find(l=>l.age===yr);
+  openS(`<div class="pbadge">A letter for ${esc(k.name)} at 18</div>
+    <h2>${existing?'This year’s letter':'Write this year’s letter'}</h2>
+    <div class="small" style="margin:4px 0 12px">Once a year, write to the grown-up ${esc(k.name)} will be. Who they are right now, what you love, what you’re praying for. It goes into The Book of ${esc(k.name)}.</div>
+    <textarea id="letterBox" class="ans" style="min-height:220px" placeholder="Dear ${esc(k.name)}, this year you…">${existing?esc(existing.text):''}</textarea>
+    <button class="btn full" style="margin-top:10px" onclick="saveLetter(${i})">Save letter</button>`);
+}
+function saveLetter(i){
+  const t=letterBox.value.trim(); if(!t) return toast('Write a few words first');
+  const k=kid(i), raw=state.kids[i]; raw.letters=raw.letters||[];
+  const ex=raw.letters.find(l=>l.age===k.years);
+  if(ex){ex.text=t;ex.date=iso(today());} else raw.letters.push({age:k.years,date:iso(today()),text:t});
+  raw.letters.sort((a,b)=>a.age-b.age); save(); closeS(); render(); toast(`Letter saved for ${k.name}`);
+}
+
+/* =========================== The Book of [Name] =========================== */
+function bookOfHTML(i){
+  const k=kid(i), raw=state.kids[i], b=k.b;
+  const ageAt=d=>{const x=parse(d); let m=(x.getFullYear()-b.getFullYear())*12+(x.getMonth()-b.getMonth()); if(x.getDate()<b.getDate()) m--; return Math.max(0,Math.floor(m/12));};
+  const years={};
+  (raw.memories||[]).forEach(m=>{const a=ageAt(m.date);(years[a]=years[a]||{a:[],s:[]}).a.push(m);});
+  (raw.stories||[]).forEach(s=>{const a=ageAt(s.date);(years[a]=years[a]||{a:[],s:[]}).s.push(s);});
+  const ages=Object.keys(years).map(Number).sort((x,y)=>x-y), letters=raw.letters||[];
+  const daysConnected=Object.keys(raw.log||{}).length, weeks=Object.keys(raw.wlog||{}).length;
+  return `<div class="pb-cover" style="border-color:${k.color}"><div class="pbadge">known: parenting</div><h2 style="font-size:30px">The Book of ${esc(k.name)}</h2>
+      <div class="small">Born ${b.toLocaleDateString(undefined,{month:'long',day:'numeric',year:'numeric'})}</div>
+      <div class="stats"><div class="stat"><b style="color:${k.color}">${daysConnected+weeks}</b><span>${weeks?'days & weeks':'days'} connected</span></div><div class="stat"><b style="color:${k.color}">${raw.best||0}</b><span>longest streak</span></div>
+      <div class="stat"><b style="color:${k.color}">${(raw.memories||[]).length}</b><span>answers saved</span></div><div class="stat"><b style="color:${k.color}">${(raw.stories||[]).length}</b><span>books made together</span></div></div></div>
+    ${letters.length?`<div class="mhead">Letters to ${esc(k.name)} at 18</div>`+letters.map(l=>`<div class="mem"><i>Written when you were ${l.age}</i><p class="pb-letter">${esc(l.text).replace(/\n/g,'<br>')}</p></div>`).join(''):''}
+    ${ages.length?ages.map(a=>`<div class="mhead">At ${a===0?'under 1':a}</div>
+      ${years[a].a.map(m=>`<div class="mem"><i>${esc(m.q)}</i><p>“${esc(m.a)}”</p><span>${parse(m.date).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})}</span></div>`).join('')}
+      ${years[a].s.map(s=>`<div class="mem"><i>A book you made together</i><p style="font-family:Fraunces,serif">${esc(s.title)}</p><span>${s.pages.length} pages</span></div>`).join('')}`).join('')
+      :`<div class="small" style="margin:14px 0">Nothing saved yet. Draw a question on ${esc(k.name)}'s page and save the answer, make a book together, or write this year's letter.</div>`}`;
+}
+function openBookOf(i){
+  const k=kid(i), hasLetter=(state.kids[i].letters||[]).some(l=>l.age===k.years);
+  openS(bookOfHTML(i)+`<div class="btns" style="margin-top:14px">
+    <button class="btn full light" onclick="writeLetter(${i})">${hasLetter?'Edit this year’s letter':'Write this year’s letter'}</button>
+    <button class="btn full" onclick="printBookOf(${i})">Print or save as PDF</button>
+    <button class="btn full light" onclick="closeS()">Close</button></div>`);
+}
+function printBookOf(i){printArea.innerHTML=bookOfHTML(i);window.print();}
